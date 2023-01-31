@@ -1,5 +1,6 @@
 package com.comradegenrr.moviehubback.standerio;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
@@ -10,17 +11,11 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
+@JsonSerialize
 public class StanderOutput {
     private ArrayList<MoviePojo> moviePojoList;
     public StanderOutput(){
         moviePojoList = new ArrayList<MoviePojo>();
     }
 
-    public void add(MoviePojo moviePojo){
-        moviePojoList.add(moviePojo);
-    }
-
-    public JSONArray jsonLized(){
-        return new JSONArray(moviePojoList);
-    }
 }
