@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.comradegenrr</groupId>
     <artifactId>moviehub</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>movie hub</name>
     <description>movie hub</description>
     <properties>
@@ -24,6 +24,12 @@
         </repository>
     </repositories>
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>

@@ -20,7 +20,7 @@ public class MainController {
 
     @PostMapping("/s")
     public StanderOutput search(@RequestBody StanderInput standerInput) throws IOException {
-        return mainService.doSearch(standerInput);
+        return mainService.doSearchWithInternetAndMongoDB(standerInput);
     }
 
 }

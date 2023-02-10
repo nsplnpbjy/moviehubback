@@ -24,4 +24,12 @@ public class MainServiceImp implements MainService{
         standerOutput.setMoviePojoList((ArrayList<MoviePojo>) moviePojoList);
         return standerOutput;
     }
+
+    @Override
+    public StanderOutput doSearchWithInternetAndMongoDB(StanderInput standerInput) throws IOException {
+        List<MoviePojo> moviePojoList = searchUtil.doSearchWithMongoDBAndInternet(standerInput.getSearchText());
+        StanderOutput standerOutput = new StanderOutput();
+        standerOutput.setMoviePojoList((ArrayList<MoviePojo>) moviePojoList);
+        return standerOutput;
+    }
 }
