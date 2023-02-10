@@ -77,7 +77,7 @@ public class SearchUtil {
                 .header("Connection","keep-alive").timeout(3000).validateTLSCertificates(false).get();
     }
 
-    //得到每一个搜索结果的子页面(带磁力连接页)
+    //得到每一个搜索结果的子页面(带磁力连接页),并装载信息
     public List<MoviePojo> getMoviePageHtml(String url) {
         Document doc = null;
         try {
@@ -100,15 +100,15 @@ public class SearchUtil {
         for (Element element:movies){
             String magnetUrl = element.select("input").first().attr("value");
             String movieTitle = baseTitle+" "+element.select("span").first().text();
-            MoviePojo addition = new MoviePojo(movieTitle,magnetUrl);
+            String imgUrl = doc.select("img[src]").first().attr("src");
+            MoviePojo addition = new MoviePojo(movieTitle,magnetUrl,imgUrl);
             moviePojoList.add(addition);
         }
         return moviePojoList;
     }
 
 
-    //这个分析方法只适用于https://www.xbshare.cc网站
-    //将磁力连接页的磁力连接扒下来
+    //逐个进入搜索后的主页面内的各个电影连接,这个分析方法只适用于https://www.xbshare.cc网站
     public List<MoviePojo> doParse(Document doc) throws IOException {
         Elements searchPageElements = doc.select("div.container").get(2).select("div.row").get(1).select("div.s")
                 .first().select("div.panel-w").first()

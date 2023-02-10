@@ -10,4 +10,5 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class MoviePojo {
     private String movieTitle;
     private String movieUrl;
+    private String avatarUrl;
 }
