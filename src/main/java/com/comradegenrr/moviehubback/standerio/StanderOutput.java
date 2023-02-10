@@ -15,6 +15,7 @@ import java.util.List;
 public class StanderOutput {
 
     private String errMsg;
+    private String avatarUrl;
     private ArrayList<MoviePojo> moviePojoList;
     public StanderOutput(){
         moviePojoList = new ArrayList<MoviePojo>();
