@@ -13,6 +13,8 @@ import java.util.List;
 @AllArgsConstructor
 @JsonSerialize
 public class StanderOutput {
+
+    private String errMsg;
     private ArrayList<MoviePojo> moviePojoList;
     public StanderOutput(){
         moviePojoList = new ArrayList<MoviePojo>();

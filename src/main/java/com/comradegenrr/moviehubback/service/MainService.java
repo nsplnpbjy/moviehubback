@@ -7,4 +7,6 @@ import java.io.IOException;
 
 public interface MainService {
     public StanderOutput doSearch(StanderInput standerInput) throws IOException;
+
+    public StanderOutput doSearchWithInternetAndMongoDB(StanderInput standerInput) throws IOException;
 }
