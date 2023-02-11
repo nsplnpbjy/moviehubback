@@ -33,5 +33,5 @@ ENV LANG C.UTF-8
 ENV JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto
 
 VOLUME /tmp
-ADD /target/moviehub-1.0.0.jar app.jar
+ADD /target/moviehub-1.0.2.jar app.jar
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
