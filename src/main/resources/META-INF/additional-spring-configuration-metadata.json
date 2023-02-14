@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "aspect.logaop.enable",
+  "type": "java.lang.String",
+  "description": "控制日志切面开关"
+}]}
