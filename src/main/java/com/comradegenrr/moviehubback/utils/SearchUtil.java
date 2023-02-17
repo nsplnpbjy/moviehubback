@@ -20,7 +20,7 @@ public interface SearchUtil {
     public Document getFirstHtml(String searchText) throws IOException;
 
      //得到每一个搜索结果的子页面(带磁力连接页),并装载信息
-     public List<MoviePojo> getMoviePageHtml(String url);
+     public List<MoviePojo> getMoviePageHtml(String url) throws IOException;
 
     //逐个进入搜索后的主页面内的各个电影连接
     public List<MoviePojo> doParse(Document doc) throws IOException;

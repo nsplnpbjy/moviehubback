@@ -24,10 +24,12 @@ import java.util.stream.Stream;
 
 
 //这个分析方法只适用于https://www.xbshare.cc网站
-@Component
+@Component(value="XbshareSearchUtil")
 public class XbshareSearchUtil implements SearchUtil{
 
     private String baseUrl = "https://www.xbshare.cc/";
+    public final static String lootFrom = "XbshareSearchUtil";
+
 
     @Autowired
     MongoTemplate mongoTemplate;
@@ -84,7 +86,7 @@ public class XbshareSearchUtil implements SearchUtil{
     }
 
     //得到每一个搜索结果的子页面(带磁力连接页),并装载信息
-    public List<MoviePojo> getMoviePageHtml(String url) {
+    public List<MoviePojo> getMoviePageHtml(String url) throws IOException {
         Document doc = null;
         try {
             doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36").timeout(3000).validateTLSCertificates(false).get();
@@ -107,7 +109,7 @@ public class XbshareSearchUtil implements SearchUtil{
             String magnetUrl = element.select("input").first().attr("value");
             String movieTitle = baseTitle+" "+element.select("span").first().text();
             String imgUrl = doc.select("img[src]").first().attr("src");
-            MoviePojo addition = new MoviePojo(movieTitle,magnetUrl,imgUrl);
+            MoviePojo addition = new MoviePojo(movieTitle,magnetUrl,imgUrl,XbshareSearchUtil.lootFrom);
             moviePojoList.add(addition);
         }
         return moviePojoList;
