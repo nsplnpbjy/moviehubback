@@ -3,7 +3,7 @@ package com.comradegenrr.moviehubback.service;
 import com.comradegenrr.moviehubback.standerio.MoviePojo;
 import com.comradegenrr.moviehubback.standerio.StanderInput;
 import com.comradegenrr.moviehubback.standerio.StanderOutput;
-import com.comradegenrr.moviehubback.utils.SearchUtil;
+import com.comradegenrr.moviehubback.utils.XbshareSearchUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -15,7 +15,7 @@ import java.util.List;
 public class MainServiceImp implements MainService{
 
     @Resource
-    SearchUtil searchUtil;
+    XbshareSearchUtil searchUtil;
 
     @Override
     public StanderOutput doSearch(StanderInput standerInput) throws IOException {
