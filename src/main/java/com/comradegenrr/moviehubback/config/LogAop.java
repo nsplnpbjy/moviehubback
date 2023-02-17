@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 @Aspect
@@ -21,6 +22,15 @@ public class LogAop {
     public StanderOutput doLog(ProceedingJoinPoint joinPoint) throws Throwable {
         Logger logger = LoggerFactory.getLogger(LogAop.class);
         Object[] args = joinPoint.getArgs();
+        if(args.length==0){
+            if(joinPoint.getSignature().getName().equals("hotKeyClean")){
+                logger.info("热键已被主动清理");
+            }
+            else if(joinPoint.getSignature().getName().equals("movieCacheClean")){
+                logger.info("电影缓存已被主动清理");
+            }
+            return (StanderOutput) joinPoint.proceed();
+        }
         if (args[0].getClass().equals(StanderInput.class)){
             StanderInput standerInput = (StanderInput) args[0];
             logger.info("搜索内容："+standerInput.getSearchText());

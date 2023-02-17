@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
 @Data
 @AllArgsConstructor
-@JsonSerialize
 public class StanderOutput {
 
     private String errMsg;

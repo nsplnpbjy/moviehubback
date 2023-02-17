@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,25 +34,25 @@ public class XbshareSearchUtil implements SearchUtil{
     @Autowired
     MongoTemplate mongoTemplate;
 
-    //检查数据库+网页搜索法
-    //如果数据库没有，则插入
-    public List<MoviePojo> doSearchWithMongoDBAndInternet(String searchText) throws IOException {
-        Pattern pattern = Pattern.compile("^.*"+searchText.trim()+".*$",Pattern.CASE_INSENSITIVE);
-        Query query = new Query(Criteria.where("movieTitle").regex(pattern));
-        List<MoviePojo> dbList = mongoTemplate.find(query,MoviePojo.class);
-        List<MoviePojo> interList = doParse(getFirstHtml(searchText));
-        //returnList是去重并集
-        List<MoviePojo> returnList = Stream.of(dbList,interList).flatMap(Collection::stream).distinct().collect(Collectors.toList());
 
-        //以下是插入去重
-        List<MoviePojo> insertList = new ArrayList<>(returnList);
-        insertList.removeAll(dbList);
-        if (!insertList.isEmpty()){
-            for (MoviePojo m :insertList) {
-                Query insertQuery = new Query(Criteria.where("movieTitle").is(m.getMovieTitle()).and("movieUrl").is(m.getMovieUrl()));
-                if (Objects.isNull(mongoTemplate.findOne(insertQuery,MoviePojo.class))){
-                    mongoTemplate.insert(m);
+    @Override
+    public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException {
+        List<MoviePojo> returnList = new ArrayList<>();
+        List<MoviePojo> interList = doParse(getFirstHtml(searchText),searchText);
+        for (MoviePojo m :interList) {
+            Query insertQuery = new Query(Criteria.where("movieTitle").is(m.getMovieTitle()).and("movieUrl").is(m.getMovieUrl()));
+            MoviePojo moviePojoListFromDb = mongoTemplate.findOne(insertQuery, MoviePojo.class);
+            if(Objects.isNull(moviePojoListFromDb)){
+                mongoTemplate.insert(m);
+                returnList.add(m);
+            }
+            else{
+                if(!moviePojoListFromDb.getBeenSearchedLike().contains(m.getBeenSearchedLike().get(0))){
+                    moviePojoListFromDb.getBeenSearchedLike().addAll(m.getBeenSearchedLike());
+                    Update update = Update.update("beenSearchedLike", moviePojoListFromDb.getBeenSearchedLike());
+                    mongoTemplate.updateFirst(insertQuery, update, MoviePojo.class);
                 }
+                returnList.add(mongoTemplate.findOne(insertQuery, MoviePojo.class));
             }
         }
         return returnList;
@@ -60,8 +60,7 @@ public class XbshareSearchUtil implements SearchUtil{
 
     //仅检查数据库搜索法
     public List<MoviePojo> doSearchWithMongoDB(String searchText) throws IOException{
-        Pattern pattern = Pattern.compile("^.*"+searchText.trim()+".*$",Pattern.CASE_INSENSITIVE);
-        Query query = new Query(Criteria.where("movieTitle").regex(pattern));
+        Query query = new Query(Criteria.where("beenSearchedLike").is(searchText));
         List<MoviePojo> returnList = new ArrayList<MoviePojo>();
         try {
             returnList = mongoTemplate.find(query, MoviePojo.class);
@@ -86,7 +85,7 @@ public class XbshareSearchUtil implements SearchUtil{
     }
 
     //得到每一个搜索结果的子页面(带磁力连接页),并装载信息
-    public List<MoviePojo> getMoviePageHtml(String url) throws IOException {
+    public List<MoviePojo> getMoviePageHtml(String url,String searchText) throws IOException {
         Document doc = null;
         try {
             doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36").timeout(3000).validateTLSCertificates(false).get();
@@ -109,7 +108,7 @@ public class XbshareSearchUtil implements SearchUtil{
             String magnetUrl = element.select("input").first().attr("value");
             String movieTitle = baseTitle+" "+element.select("span").first().text();
             String imgUrl = doc.select("img[src]").first().attr("src");
-            MoviePojo addition = new MoviePojo(movieTitle,magnetUrl,imgUrl,XbshareSearchUtil.lootFrom);
+            MoviePojo addition = new MoviePojo(movieTitle,magnetUrl,imgUrl,XbshareSearchUtil.lootFrom,searchText);
             moviePojoList.add(addition);
         }
         return moviePojoList;
@@ -117,7 +116,7 @@ public class XbshareSearchUtil implements SearchUtil{
 
 
     //逐个进入搜索后的主页面内的各个电影连接,这个分析方法只适用于https://www.xbshare.cc网站
-    public List<MoviePojo> doParse(Document doc) throws IOException {
+    public List<MoviePojo> doParse(Document doc,String searchText) throws IOException {
         Elements searchPageElements = doc.select("div.container").get(2).select("div.row").get(1).select("div.s")
                 .first().select("div.panel-w").first()
                 .select("div.panel-body").first()
@@ -131,7 +130,7 @@ public class XbshareSearchUtil implements SearchUtil{
             link = link.substring(0,link.length()-5);
             link = "d"+link.substring(2);
             link = baseUrl+link+"-magnet.html";
-            moviePojoList.addAll(getMoviePageHtml(link));
+            moviePojoList.addAll(getMoviePageHtml(link,searchText));
         }
         return moviePojoList;
     }

@@ -15,12 +15,13 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Component;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
+
 import com.comradegenrr.moviehubback.standerio.MoviePojo;
 
 @Component(value = "FoxiysSearchUtil")
@@ -32,33 +33,34 @@ public class FoxiysSearchUtil implements SearchUtil{
     @Autowired
     MongoTemplate mongoTemplate;
 
-    @Override
-    public List<MoviePojo> doSearchWithMongoDBAndInternet(String searchText) throws IOException {
-        Pattern pattern = Pattern.compile("^.*"+searchText.trim()+".*$",Pattern.CASE_INSENSITIVE);
-        Query query = new Query(Criteria.where("movieTitle").regex(pattern));
-        List<MoviePojo> dbList = mongoTemplate.find(query,MoviePojo.class);
-        List<MoviePojo> interList = doParse(getFirstHtml(searchText));
-        //returnList是去重并集
-        List<MoviePojo> returnList = Stream.of(dbList,interList).flatMap(Collection::stream).distinct().collect(Collectors.toList());
 
-        //以下是插入去重
-        List<MoviePojo> insertList = new ArrayList<>(returnList);
-        insertList.removeAll(dbList);
-        if (!insertList.isEmpty()){
-            for (MoviePojo m :insertList) {
-                Query insertQuery = new Query(Criteria.where("movieTitle").is(m.getMovieTitle()).and("movieUrl").is(m.getMovieUrl()));
-                if (Objects.isNull(mongoTemplate.findOne(insertQuery,MoviePojo.class))){
-                    mongoTemplate.insert(m);
+    @Override
+    public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException {
+        List<MoviePojo> returnList = new ArrayList<>();
+        List<MoviePojo> interList = doParse(getFirstHtml(searchText),searchText);
+        for (MoviePojo m :interList) {
+            Query insertQuery = new Query(Criteria.where("movieTitle").is(m.getMovieTitle()).and("movieUrl").is(m.getMovieUrl()));
+            MoviePojo moviePojoListFromDb = mongoTemplate.findOne(insertQuery, MoviePojo.class);
+            if(Objects.isNull(moviePojoListFromDb)){
+                mongoTemplate.insert(m);
+                returnList.add(m);
+            }
+            else{
+                if(!moviePojoListFromDb.getBeenSearchedLike().contains(m.getBeenSearchedLike().get(0))){
+                    moviePojoListFromDb.getBeenSearchedLike().addAll(m.getBeenSearchedLike());
+                    Update update = Update.update("beenSearchedLike", moviePojoListFromDb.getBeenSearchedLike());
+                    mongoTemplate.updateFirst(insertQuery, update, MoviePojo.class);
                 }
+                returnList.add(mongoTemplate.findOne(insertQuery, MoviePojo.class));
             }
         }
         return returnList;
     }
 
+
     @Override
     public List<MoviePojo> doSearchWithMongoDB(String searchText) throws IOException {
-        Pattern pattern = Pattern.compile("^.*"+searchText.trim()+".*$",Pattern.CASE_INSENSITIVE);
-        Query query = new Query(Criteria.where("movieTitle").regex(pattern));
+        Query query = new Query(Criteria.where("beenSearchedLike").is(searchText));
         List<MoviePojo> returnList = new ArrayList<MoviePojo>();
         try {
             returnList = mongoTemplate.find(query, MoviePojo.class);
@@ -81,7 +83,7 @@ public class FoxiysSearchUtil implements SearchUtil{
 
     //这一页的url参数必须是https://www.foxiys.com/d-4d1m-magnet.html类似
     @Override
-    public List<MoviePojo> getMoviePageHtml(String url) throws IOException {
+    public List<MoviePojo> getMoviePageHtml(String url,String searchText) throws IOException {
         Document doc = null;
         try {
             doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36").timeout(3000).validateTLSCertificates(false).get();
@@ -102,7 +104,7 @@ public class FoxiysSearchUtil implements SearchUtil{
             String movieSubTitle = movieLi.select("span[class=input-group-addon content]").first().text();
             String movieTitle = movieMainTitle+movieSubTitle;
             String magnet = movieLi.select("input[type=text]").first().attr("value");
-            moviePojoList.add(new MoviePojo(movieTitle, magnet, moviePicUrl,FoxiysSearchUtil.lootFrom));
+            moviePojoList.add(new MoviePojo(movieTitle, magnet, moviePicUrl,FoxiysSearchUtil.lootFrom,searchText));
         }
         return moviePojoList;
     }
@@ -110,7 +112,7 @@ public class FoxiysSearchUtil implements SearchUtil{
 
     //这里进来的doc是搜索后出现的首页
     @Override
-    public List<MoviePojo> doParse(Document doc) throws IOException {
+    public List<MoviePojo> doParse(Document doc,String searchText) throws IOException {
         Elements movieRows = doc.select("div[class=container]").get(1).select("div[class=row]").first().select("div[class=s]")
         .first().select("div[class=panel-body]").first().select("div[class=row]").first().select("div[class=col-xs-12 col-sm-6 col-md-6 col-lg-4]");
         List<MoviePojo> moviePojoList = new ArrayList<>();
@@ -118,7 +120,7 @@ public class FoxiysSearchUtil implements SearchUtil{
             String rowUrl = element.select("a[href]").first().attr("href");
             rowUrl = rowUrl.substring(2,rowUrl.length()-5);
             rowUrl = baseUrl+"d"+rowUrl+"-magnet.html";
-            moviePojoList.addAll(getMoviePageHtml(rowUrl));
+            moviePojoList.addAll(getMoviePageHtml(rowUrl,searchText));
         }
         return moviePojoList;
     }

@@ -8,12 +8,12 @@ import java.io.IOException;
 public interface MainService {
     public StanderOutput doSearchWithInternet(StanderInput standerInput) throws IOException;
 
-    public StanderOutput doSearchWithInternetAndMongoDB(StanderInput standerInput) throws IOException;
-
     public StanderOutput doSearchWithMongoDB(StanderInput standerInput) throws IOException;
 
-    default public StanderOutput doSearchSmart(StanderInput standerInput) throws IOException{
-        return null;
-    };
+    public StanderOutput doSearchSmart(StanderInput standerInput) throws IOException;
+
+    public StanderOutput hotKeyClean();
+
+    public StanderOutput movieCacheClean();
 
 }
