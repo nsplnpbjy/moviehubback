@@ -1,8 +1,6 @@
 package com.comradegenrr.moviehubback.standerio;
 
 import java.util.Date;
-import java.util.List;
-
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 

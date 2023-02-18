@@ -11,7 +11,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.Objects;
 
 @Component
 @Aspect
@@ -31,7 +30,7 @@ public class LogAop {
             }
             return (StanderOutput) joinPoint.proceed();
         }
-        if (args[0].getClass().equals(StanderInput.class)){
+        else if (args[0].getClass().equals(StanderInput.class)){
             StanderInput standerInput = (StanderInput) args[0];
             logger.info("搜索内容："+standerInput.getSearchText());
             Object obj = joinPoint.proceed();
