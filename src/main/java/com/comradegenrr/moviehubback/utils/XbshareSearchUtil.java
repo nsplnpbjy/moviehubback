@@ -69,6 +69,10 @@ public class XbshareSearchUtil implements SearchUtil{
 
 
 
+
+
+    //----------------分隔线-----------------------------------------------------------------------------------------------------------------------------------------------------
+    //以下为分析方法，必须为每一个不同的网址自行配置
     //得到搜索后首页
     public Document getFirstHtml(String searchText) throws IOException {
         String encodedSearchText = URLEncoder.encode(searchText, StandardCharsets.UTF_8);
@@ -112,7 +116,7 @@ public class XbshareSearchUtil implements SearchUtil{
     }
 
 
-    //逐个进入搜索后的主页面内的各个电影连接,这个分析方法只适用于https://www.xbshare.cc网站
+    //逐个进入搜索后的主页面内的各个电影连接
     public List<MoviePojo> doParse(Document doc,String searchText) throws IOException {
         Elements searchPageElements = doc.select("div.container").get(2).select("div.row").get(1).select("div.s")
                 .first().select("div.panel-w").first()

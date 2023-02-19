@@ -1,6 +1,6 @@
 package com.comradegenrr.moviehubback.standerio;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.MongoId;
 
@@ -15,9 +15,9 @@ public class SearchCachePojo {
     @MongoId
     private String id;
     private String recentSearchText;
-    private Date lastDate;
+    private LocalDateTime lastDate;
 
-    public SearchCachePojo(String recentSearchText,Date lastDate){
+    public SearchCachePojo(String recentSearchText,LocalDateTime lastDate){
         this.recentSearchText = recentSearchText;
         this.lastDate = lastDate;
     }

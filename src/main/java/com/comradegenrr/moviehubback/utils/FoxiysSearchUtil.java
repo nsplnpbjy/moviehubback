@@ -66,6 +66,11 @@ public class FoxiysSearchUtil implements SearchUtil{
         return returnList;
     }
 
+
+
+    //----------------分隔线-----------------------------------------------------------------------------------------------------------------------------------------------------
+    //以下为分析方法，必须为每一个不同的网址自行配置
+    //得到搜索后首页
     @Override
     public Document getFirstHtml(String searchText) throws IOException {
         String encodedSearchText = URLEncoder.encode(searchText, StandardCharsets.UTF_8);
@@ -77,6 +82,8 @@ public class FoxiysSearchUtil implements SearchUtil{
         .header("Connection","keep-alive").timeout(3000).validateTLSCertificates(false).get();
     }
 
+
+    //得到每一个搜索结果的子页面(带磁力连接页),并装载信息
     //这一页的url参数必须是https://www.foxiys.com/d-4d1m-magnet.html类似
     @Override
     public List<MoviePojo> getMoviePageHtml(String url,String searchText) throws IOException {
@@ -106,6 +113,7 @@ public class FoxiysSearchUtil implements SearchUtil{
     }
 
 
+    //逐个进入搜索后的主页面内的各个电影连接
     //这里进来的doc是搜索后出现的首页
     @Override
     public List<MoviePojo> doParse(Document doc,String searchText) throws IOException {

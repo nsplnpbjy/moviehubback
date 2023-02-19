@@ -8,19 +8,16 @@ import com.comradegenrr.moviehubback.utils.SearchUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import javax.annotation.Resource;
 
 @Service
 public class MainServiceImp implements MainService{
@@ -31,10 +28,12 @@ public class MainServiceImp implements MainService{
     @Autowired
     MongoTemplate mongoTemplate;
 
+    @Resource
+    SearchCacheManagerService searchCacheManagerService;
+
     @Override
     public StanderOutput doSearchWithInternet(StanderInput standerInput) throws IOException {
-        Map<String, SearchUtil> searchUtilMap = applicationContext.getBeansOfType(SearchUtil.class);
-        List<SearchUtil> searchUtilList =  searchUtilMap.values().stream().collect(Collectors.toList()); 
+        List<SearchUtil> searchUtilList =  getSearchUtilImpList();
         List<MoviePojo> moviePojoList = new ArrayList<MoviePojo>();
         for(SearchUtil searchUtil:searchUtilList){
             moviePojoList.addAll(searchUtil.doSearchWithInternet(standerInput.getSearchText()));
@@ -47,45 +46,32 @@ public class MainServiceImp implements MainService{
 
     @Override
     public StanderOutput doSearchWithMongoDB(StanderInput standerInput) throws IOException {
-        Map<String, SearchUtil> searchUtilMap = applicationContext.getBeansOfType(SearchUtil.class);
-        List<SearchUtil> searchUtilList =  searchUtilMap.values().stream().collect(Collectors.toList()); 
+        List<SearchUtil> searchUtilList =  getSearchUtilImpList();
+        //因为所有SearchUtil的实现都连接同一个数据库，故以下只用一个SearchUtil操作
+        //如果使用不同的数据库，可参考注释
+        /* 
         Set<MoviePojo> moviePojoSet = new HashSet<>();
         for(SearchUtil searchUtil:searchUtilList){
             moviePojoSet.addAll(searchUtil.doSearchWithMongoDB(standerInput.getSearchText()));
         }
+        */
+        List<MoviePojo> moviePojoList = searchUtilList.get(0).doSearchWithMongoDB(standerInput.getSearchText());
         StanderOutput standerOutput = new StanderOutput();
-        standerOutput.setMoviePojoList(new ArrayList<>(moviePojoSet));
+        standerOutput.setMoviePojoList((ArrayList<MoviePojo>) moviePojoList);
         return standerOutput;
     }
 
     @Override
     public StanderOutput doSearchSmart(StanderInput standerInput) throws IOException {
-        List<SearchCachePojo> searchCachePojoList =  mongoTemplate.findAll(SearchCachePojo.class); 
-        if(searchCachePojoList.isEmpty()){
-            mongoTemplate.insert(new SearchCachePojo(standerInput.getSearchText(), new Date()));
+        SearchCachePojo searchCachePojo = searchCacheManagerService.getSearchCachePojoBySearchText(standerInput.getSearchText());
+        if(Objects.isNull(searchCachePojo)){
+            searchCacheManagerService.newSearchCache(standerInput.getSearchText());
             return doSearchWithInternet(standerInput);
         }
-        for(SearchCachePojo searchCachePojo:searchCachePojoList){
-            if(searchCachePojo.getRecentSearchText().equals(standerInput.getSearchText())){
-
-                //更新热词
-                Query query = Query.query(Criteria.where("recentSearchText").is(standerInput.getSearchText()));
-                Update update = Update.update("lastDate", new Date());
-                mongoTemplate.updateFirst(query, update, SearchCachePojo.class);
-
-                List<MoviePojo> returnList = doSearchWithMongoDB(standerInput).getMoviePojoList();
-                if(returnList.isEmpty()){
-                    return doSearchWithInternet(standerInput);
-                }
-                else{
-                    StanderOutput standerOutput = new StanderOutput();
-                    standerOutput.setMoviePojoList((ArrayList<MoviePojo>) returnList);
-                    return standerOutput;
-                }
-            }
+        else{
+            searchCacheManagerService.newSearchCache(standerInput.getSearchText());
+            return doSearchWithMongoDB(standerInput);
         }
-        mongoTemplate.insert(new SearchCachePojo(standerInput.getSearchText(), new Date()));
-        return doSearchWithInternet(standerInput);
     }
 
     @Override
@@ -98,5 +84,13 @@ public class MainServiceImp implements MainService{
     public StanderOutput movieCacheClean() {
         mongoTemplate.dropCollection(MoviePojo.class);
         return new StanderOutput("DONE",null,null);
+    }
+
+
+    @Override
+    public List<SearchUtil> getSearchUtilImpList() {
+        Map<String, SearchUtil> searchUtilMap = applicationContext.getBeansOfType(SearchUtil.class);
+        List<SearchUtil> searchUtilList = searchUtilMap.values().stream().collect(Collectors.toList());
+        return searchUtilList; 
     }
 }
