@@ -1,4 +1,4 @@
-package com.comradegenrr.moviehubback.service;
+package com.comradegenrr.moviehubback.service.mainfunc;
 
 import java.util.List;
 

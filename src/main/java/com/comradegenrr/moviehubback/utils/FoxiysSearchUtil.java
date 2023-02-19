@@ -87,6 +87,9 @@ public class FoxiysSearchUtil implements SearchUtil{
         List<MoviePojo> moviePojoList = new ArrayList<>();
         for(Element movieLi : movieLis){
             String movieSubTitle = movieLi.select("span[class=input-group-addon content]").first().text();
+            if(Objects.isNull(movieSubTitle)){
+                movieSubTitle = movieLi.select("span[class=input-group-addon content]").first().attr("title");
+            }
             String movieTitle = movieMainTitle+movieSubTitle;
             String magnet = movieLi.select("input[type=text]").first().attr("value");
             moviePojoList.add(new MoviePojo(movieTitle, magnet, moviePicUrl,FoxiysSearchUtil.lootFrom,searchText));

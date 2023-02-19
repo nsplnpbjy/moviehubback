@@ -1,4 +1,4 @@
-package com.comradegenrr.moviehubback.service;
+package com.comradegenrr.moviehubback.service.mainfunc;
 
 import com.comradegenrr.moviehubback.standerio.MoviePojo;
 import com.comradegenrr.moviehubback.standerio.SearchCachePojo;
@@ -16,9 +16,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -42,10 +44,8 @@ public class MainServiceImp implements MainService{
         for(SearchUtil searchUtil:searchUtilList){
             moviePojoList.addAll(searchUtil.doSearchWithInternet(standerInput.getSearchText()));
         }
-        moviePojoList = makeListSingleByMovieUrl(moviePojoList);
-        mergeIntoMongoDB(moviePojoList);
         StanderOutput standerOutput = new StanderOutput();
-        standerOutput.setMoviePojoList((ArrayList<MoviePojo>) moviePojoList);
+        standerOutput.setMoviePojoList((ArrayList<MoviePojo>) mergeIntoMongoDB(makeListSingleByMovieUrl(moviePojoList)));
         return standerOutput;
     }
 
@@ -63,7 +63,7 @@ public class MainServiceImp implements MainService{
         */
         List<MoviePojo> moviePojoList = searchUtilList.get(0).doSearchWithMongoDB(standerInput.getSearchText());
         StanderOutput standerOutput = new StanderOutput();
-        standerOutput.setMoviePojoList((ArrayList<MoviePojo>) moviePojoList);
+        standerOutput.setMoviePojoList((ArrayList<MoviePojo>) mergeIntoMongoDB(makeListSingleByMovieUrl(moviePojoList)));
         return standerOutput;
     }
 
@@ -80,23 +80,13 @@ public class MainServiceImp implements MainService{
         }
     }
 
-    @Override
-    public StanderOutput hotKeyClean() {
-        mongoTemplate.dropCollection(SearchCachePojo.class);
-        return new StanderOutput("DONE",null,null);
-    }
-
-    //单独删除电影缓存是危险的，要一并删除热键
-    @Override
-    public StanderOutput movieCacheClean() {
-        mongoTemplate.dropCollection(MoviePojo.class);
-        mongoTemplate.dropCollection(SearchCachePojo.class);
-        return new StanderOutput("DONE",null,null);
-    }
 
 
-    @Override
-    public List<SearchUtil> getSearchUtilImpList() {
+
+
+    //--------以下是实现类的私有方法-----------------------------------------------------------------------------------------------------------------------------------------
+    //这个方法用于返回所有注册在容器中的SearchUtil的实现
+    private List<SearchUtil> getSearchUtilImpList() {
         Map<String, SearchUtil> searchUtilMap = applicationContext.getBeansOfType(SearchUtil.class);
         List<SearchUtil> searchUtilList = searchUtilMap.values().stream().collect(Collectors.toList());
         return searchUtilList; 
@@ -105,27 +95,33 @@ public class MainServiceImp implements MainService{
 
     //将列表向数据库进行查改
     //参数moviePojoListFromInternet中MoviePojo的movieUrl不能有重复
-    @Override
-    public List<MoviePojo> mergeIntoMongoDB(List<MoviePojo> moviePojoListFromInternet) {
+    private List<MoviePojo> mergeIntoMongoDB(List<MoviePojo> moviePojoListFromInternet) {
+        List<MoviePojo> returnList = new ArrayList<>();
         if(moviePojoListFromInternet.isEmpty()){
-            return moviePojoListFromInternet;
+            returnList = moviePojoListFromInternet;
+            return returnList;
         }
         else{
             for(MoviePojo moviePojoFromInternet:moviePojoListFromInternet){
                 Query query = new Query(Criteria.where("movieUrl").is(moviePojoFromInternet.getMovieUrl()));
                 List<MoviePojo> moviePojoListFromDB = mongoTemplate.find(query, MoviePojo.class);
                 if(moviePojoListFromDB.isEmpty()){
+                    returnList.add(moviePojoFromInternet);
                     mongoTemplate.save(moviePojoFromInternet);
                 }
                 else if(moviePojoListFromDB.size()>1){
                     MoviePojo insertMoviePojo = moviePojoListFromDB.get(0);
-                    if(!insertMoviePojo.getBeenSearchedLike().containsAll(moviePojoFromInternet.getBeenSearchedLike())){
-                        insertMoviePojo.getBeenSearchedLike().addAll(moviePojoFromInternet.getBeenSearchedLike());
+                    Set<String> restBeenSearchedLike = new HashSet<>();
+                    for(MoviePojo m:moviePojoListFromDB){
+                        restBeenSearchedLike.addAll(new HashSet<>(m.getBeenSearchedLike()));
                     }
+                    restBeenSearchedLike.addAll(new HashSet<>(moviePojoFromInternet.getBeenSearchedLike()));
+                    insertMoviePojo.setBeenSearchedLike(new ArrayList<>(restBeenSearchedLike));
                     for(MoviePojo m:moviePojoListFromDB){
                         Query deletQuery = new Query(Criteria.where("id").is(m.getId()));
                         mongoTemplate.remove(deletQuery,MoviePojo.class);
                     }
+                    returnList.add(insertMoviePojo);
                     mongoTemplate.save(insertMoviePojo);
                 }
                 else{
@@ -133,17 +129,17 @@ public class MainServiceImp implements MainService{
                     if(!updateMoviePojo.getBeenSearchedLike().containsAll(moviePojoFromInternet.getBeenSearchedLike())){
                         updateMoviePojo.getBeenSearchedLike().addAll(moviePojoFromInternet.getBeenSearchedLike());
                     }
+                    returnList.add(updateMoviePojo);
                     mongoTemplate.save(updateMoviePojo);
                 }
             }
-            return moviePojoListFromInternet;
+            return returnList;
         }
     }
 
 
     //根据movieUrl去重
-    @Override
-    public List<MoviePojo> makeListSingleByMovieUrl(List<MoviePojo> moviePojoList) {
+    private List<MoviePojo> makeListSingleByMovieUrl(List<MoviePojo> moviePojoList) {
         Map<String,MoviePojo> moviePojoMap = new HashMap<>();
         for(MoviePojo moviePojo:moviePojoList){
             if(moviePojoMap.get(moviePojo.getMovieUrl())==null){
