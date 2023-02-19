@@ -10,20 +10,15 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -108,7 +103,8 @@ public class MainServiceImp implements MainService{
     }
 
 
-    //moviePojoListFromInternet中MoviePojo的movieUrl不能有重复
+    //将列表向数据库进行查改
+    //参数moviePojoListFromInternet中MoviePojo的movieUrl不能有重复
     @Override
     public List<MoviePojo> mergeIntoMongoDB(List<MoviePojo> moviePojoListFromInternet) {
         if(moviePojoListFromInternet.isEmpty()){
