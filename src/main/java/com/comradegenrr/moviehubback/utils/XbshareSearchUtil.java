@@ -32,27 +32,10 @@ public class XbshareSearchUtil implements SearchUtil{
     MongoTemplate mongoTemplate;
 
 
+    //仅网页搜索法
     @Override
     public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException {
-        List<MoviePojo> returnList = new ArrayList<>();
-        List<MoviePojo> interList = doParse(getFirstHtml(searchText),searchText);
-        for (MoviePojo m :interList) {
-            Query insertQuery = new Query(Criteria.where("movieTitle").is(m.getMovieTitle()).and("movieUrl").is(m.getMovieUrl()));
-            MoviePojo moviePojoListFromDb = mongoTemplate.findOne(insertQuery, MoviePojo.class);
-            if(Objects.isNull(moviePojoListFromDb)){
-                mongoTemplate.insert(m);
-                returnList.add(m);
-            }
-            else{
-                if(!moviePojoListFromDb.getBeenSearchedLike().contains(m.getBeenSearchedLike().get(0))){
-                    moviePojoListFromDb.getBeenSearchedLike().addAll(m.getBeenSearchedLike());
-                    Update update = Update.update("beenSearchedLike", moviePojoListFromDb.getBeenSearchedLike());
-                    mongoTemplate.updateFirst(insertQuery, update, MoviePojo.class);
-                }
-                returnList.add(mongoTemplate.findOne(insertQuery, MoviePojo.class));
-            }
-        }
-        return returnList;
+        return doParse(getFirstHtml(searchText),searchText);
     }
 
     //仅检查数据库搜索法
