@@ -11,14 +11,15 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Objects;
 
 @Component
 @Aspect
 @ConditionalOnProperty(prefix = "aspect.logaop",name = "enable",havingValue = "true")
 public class LogAop {
 
-    @Around("execution(* com.comradegenrr.moviehubback.service.MainServiceImp.*(..))")
-    public StanderOutput doLog(ProceedingJoinPoint joinPoint) throws Throwable {
+    @Around("execution(* com.comradegenrr.moviehubback.service.mainfunc.MainService.*(..))")
+    public StanderOutput doLogForSearch(ProceedingJoinPoint joinPoint) throws Throwable {
         Logger logger = LoggerFactory.getLogger(LogAop.class);
         Object[] args = joinPoint.getArgs();
         if (args[0].getClass().equals(StanderInput.class)){
@@ -30,8 +31,23 @@ public class LogAop {
             return standerOutput;
         }
         else {
-            logger.error("获取搜索内容失败");
+            logger.error("不可预知的意外发生了");
             throw new IOException();
+        }
+    }
+
+    @Around("execution(* com.comradegenrr.moviehubback.service.testfunc.TestService.*(..))")
+    public StanderOutput doLogForTest(ProceedingJoinPoint joinPoint) throws Throwable{
+        Logger logger = LoggerFactory.getLogger(LogAop.class);
+        String methodName = joinPoint.getSignature().getName();
+        StanderOutput standerOutput = (StanderOutput) joinPoint.proceed();
+        if(Objects.isNull(standerOutput.getMoviePojoList())){
+            logger.info(methodName+" has been proceed");
+            return standerOutput;
+        }
+        else{
+            logger.info(methodName+" has been proceed, return movie count:"+standerOutput.getMoviePojoList().size());
+            return standerOutput;
         }
     }
 

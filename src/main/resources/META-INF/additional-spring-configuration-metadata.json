@@ -1,5 +1,12 @@
-{"properties": [{
-  "name": "aspect.logaop.enable",
-  "type": "java.lang.String",
-  "description": "控制日志切面开关"
-}]}
+{"properties": [
+  {
+    "name": "aspect.logaop.enable",
+    "type": "java.lang.String",
+    "description": "控制日志切面开关"
+  },
+  {
+    "name": "hotkey.auto-clean.enable",
+    "type": "java.lang.String",
+    "description": "控制热键自动清除开关"
+  }
+]}

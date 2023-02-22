@@ -1,13 +1,11 @@
 package com.comradegenrr.moviehubback.standerio;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.util.ArrayList;
 
 @Data
 @AllArgsConstructor
-@JsonSerialize
 public class StanderOutput {
 
     private String errMsg;
