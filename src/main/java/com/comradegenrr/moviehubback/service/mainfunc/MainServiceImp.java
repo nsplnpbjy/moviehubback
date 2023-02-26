@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
+import javax.script.ScriptException;
 
 @Service
 public class MainServiceImp implements MainService{
@@ -38,7 +39,7 @@ public class MainServiceImp implements MainService{
     SearchCacheManagerService searchCacheManagerService;
 
     @Override
-    public StanderOutput doSearchWithInternet(StanderInput standerInput) throws IOException {
+    public StanderOutput doSearchWithInternet(StanderInput standerInput) throws IOException, NoSuchMethodException, ScriptException {
         List<SearchUtil> searchUtilList =  getSearchUtilImpList();
         List<MoviePojo> moviePojoList = new ArrayList<MoviePojo>();
         for(SearchUtil searchUtil:searchUtilList){
@@ -68,7 +69,7 @@ public class MainServiceImp implements MainService{
     }
 
     @Override
-    public StanderOutput doSearchSmart(StanderInput standerInput) throws IOException {
+    public StanderOutput doSearchSmart(StanderInput standerInput) throws IOException, NoSuchMethodException, ScriptException {
         SearchCachePojo searchCachePojo = searchCacheManagerService.getSearchCachePojoBySearchText(standerInput.getSearchText());
         if(Objects.isNull(searchCachePojo)){
             searchCacheManagerService.newSearchCache(standerInput.getSearchText());

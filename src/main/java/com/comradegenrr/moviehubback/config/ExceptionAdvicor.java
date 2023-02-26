@@ -16,4 +16,11 @@ public class ExceptionAdvicor {
         return standerOutput;
     }
 
+    @ExceptionHandler(NullPointerException.class)
+    public StanderOutput nullPointerExceptionHandler(NullPointerException e){
+        StanderOutput standerOutput = new StanderOutput();
+        standerOutput.setErrMsg("查询内容不存在");
+        return standerOutput;
+    }
+
 }

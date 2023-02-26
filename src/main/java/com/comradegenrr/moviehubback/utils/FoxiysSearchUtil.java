@@ -1,11 +1,16 @@
 package com.comradegenrr.moviehubback.utils;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,7 +35,7 @@ public class FoxiysSearchUtil implements SearchUtil{
 
     //网页搜索法
     @Override
-    public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException {
+    public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException, NoSuchMethodException, ScriptException {
         return doParse(getFirstHtml(searchText),searchText);
     }
 
@@ -54,8 +59,8 @@ public class FoxiysSearchUtil implements SearchUtil{
     //以下为分析方法，必须为每一个不同的网址自行配置
     //得到搜索后首页
     @Override
-    public Document getFirstHtml(String searchText) throws IOException {
-        String encodedSearchText = URLEncoder.encode(searchText, StandardCharsets.UTF_8);
+    public Document getFirstHtml(String searchText) throws IOException, NoSuchMethodException, ScriptException {
+        String encodedSearchText = encryptMetond(searchText);
         String url = baseUrl+"query/"+encodedSearchText;
         return Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36")
         .header("Accept","*/*")
@@ -86,9 +91,10 @@ public class FoxiysSearchUtil implements SearchUtil{
         Elements movieLis = rowBody.select("li[data-type=magnet]");
         List<MoviePojo> moviePojoList = new ArrayList<>();
         for(Element movieLi : movieLis){
-            String movieSubTitle = movieLi.select("span[class=input-group-addon content]").first().text();
-            if(Objects.isNull(movieSubTitle)){
-                movieSubTitle = movieLi.select("span[class=input-group-addon content]").first().attr("title");
+            String movieSubTitle = "";
+            Element movieSubTitleElement = movieLi.select("button[data-name]").first();
+            if(!Objects.isNull(movieSubTitleElement)){
+                movieSubTitle = movieSubTitleElement.attr("data-name");
             }
             String movieTitle = movieMainTitle+movieSubTitle;
             String magnet = movieLi.select("input[type=text]").first().attr("value");
@@ -112,6 +118,27 @@ public class FoxiysSearchUtil implements SearchUtil{
             moviePojoList.addAll(getMoviePageHtml(rowUrl,searchText));
         }
         return moviePojoList;
+    }
+
+    private String encryptMetond(String t) throws ScriptException, NoSuchMethodException, FileNotFoundException{
+        ScriptEngine se = new ScriptEngineManager().getEngineByName("javascript");
+        se.eval(new FileReader("base64.js"));
+        Invocable invocable = (Invocable) se;
+        String output = "";
+        if(t.length()<7){
+            t = t + "       ".substring(0, 7 - t.length());
+          }
+          if(t.length() > 15){
+            t = t.substring(0, 15);
+        }
+        output = (String) invocable.invokeFunction("encode", t);
+        output = output.replaceAll("[/]", "_");
+        output = output.replaceAll("[+]", "-");
+        output = output.replaceAll("[=]", "");
+        String output1 = output.substring(0, 6);
+        String output2 = output.substring(6);
+        output = output1+"j"+output2;
+        return output;
     }
     
 }

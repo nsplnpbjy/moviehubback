@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import javax.script.ScriptException;
+
 import java.io.IOException;
 
 @CrossOrigin("*")
@@ -25,7 +27,7 @@ public class MainController {
     private TestService testService;
 
     @PostMapping("/s")
-    public StanderOutput search(@RequestBody StanderInput standerInput) throws IOException {
+    public StanderOutput search(@RequestBody StanderInput standerInput) throws IOException, NoSuchMethodException, ScriptException {
         return mainService.doSearchSmart(standerInput);
     }
 

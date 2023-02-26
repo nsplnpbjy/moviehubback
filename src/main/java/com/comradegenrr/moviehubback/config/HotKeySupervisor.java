@@ -34,10 +34,10 @@ public class HotKeySupervisor {
         }
         for(SearchCachePojo searchCachePojo:searchCachePojoList){
             long hoursDiff = ChronoUnit.HOURS.between(searchCachePojo.getLastDate(),LocalDateTime.now());
-            if(hoursDiff>100){
+            if(hoursDiff>24){
                 Query query = new Query(Criteria.where("id").is(searchCachePojo.getId()));
                 mongoTemplate.remove(query, SearchCachePojo.class);
-                logger.info("因超过一百小时无人使用，已丢弃:"+searchCachePojo.getRecentSearchText());
+                logger.info("因超过二十四小时无人使用，已丢弃:"+searchCachePojo.getRecentSearchText());
             }
         }
     }

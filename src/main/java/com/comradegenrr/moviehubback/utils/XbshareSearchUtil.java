@@ -11,11 +11,18 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 
 //这个分析方法只适用于https://www.xbshare.cc网站
@@ -32,7 +39,7 @@ public class XbshareSearchUtil implements SearchUtil{
 
     //仅网页搜索法
     @Override
-    public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException {
+    public List<MoviePojo> doSearchWithInternet(String searchText) throws IOException, NoSuchMethodException, ScriptException {
         return doParse(getFirstHtml(searchText),searchText);
     }
 
@@ -55,8 +62,8 @@ public class XbshareSearchUtil implements SearchUtil{
     //----------------分隔线-----------------------------------------------------------------------------------------------------------------------------------------------------
     //以下为分析方法，必须为每一个不同的网址自行配置
     //得到搜索后首页
-    public Document getFirstHtml(String searchText) throws IOException {
-        String encodedSearchText = URLEncoder.encode(searchText, StandardCharsets.UTF_8);
+    public Document getFirstHtml(String searchText) throws IOException, NoSuchMethodException, ScriptException {
+        String encodedSearchText = encryptMetond(searchText);
         String url = baseUrl+"query/"+encodedSearchText;
         //return  JsoupSSLHelper.getConnection(url).get();//
         return Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36")
@@ -116,5 +123,25 @@ public class XbshareSearchUtil implements SearchUtil{
         }
         return moviePojoList;
     }
-
+    
+    private String encryptMetond(String t) throws ScriptException, NoSuchMethodException, FileNotFoundException{
+        ScriptEngine se = new ScriptEngineManager().getEngineByName("javascript");
+        se.eval(new FileReader("base64.js"));
+        Invocable invocable = (Invocable) se;
+        String output = "";
+        if(t.length()<7){
+            t = t + "       ".substring(0, 7 - t.length());
+          }
+          if(t.length() > 15){
+            t = t.substring(0, 15);
+        }
+        output = (String) invocable.invokeFunction("encode", t);
+        output = output.replaceAll("[/]", "_");
+        output = output.replaceAll("[+]", "-");
+        output = output.replaceAll("[=]", "");
+        String output1 = output.substring(0, 6);
+        String output2 = output.substring(6);
+        output = output1+"j"+output2;
+        return output;
+    }
 }
