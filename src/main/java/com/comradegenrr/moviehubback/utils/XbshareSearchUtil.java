@@ -68,14 +68,14 @@ public class XbshareSearchUtil implements SearchUtil{
                 .header("Accept","*/*")
                 .header("Content-Type","application/json")
                 .header("Accept-Encoding","gzip,deflate,br")
-                .header("Connection","keep-alive").timeout(3000).validateTLSCertificates(false).get();
+                .header("Connection","keep-alive").timeout(30000).validateTLSCertificates(false).get();
     }
 
     //得到每一个搜索结果的子页面(带磁力连接页),并装载信息
     public List<MoviePojo> getMoviePageHtml(String url,String searchText) throws IOException {
         Document doc = null;
         try {
-            doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36").timeout(3000).validateTLSCertificates(false).get();
+            doc = Jsoup.connect(url).userAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36").timeout(30000).validateTLSCertificates(false).get();
         } catch (IOException e) {
             return new ArrayList<MoviePojo>();
         }

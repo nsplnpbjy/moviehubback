@@ -36,7 +36,7 @@ public class LogAop {
         }
     }
 
-    @Around("execution(* com.comradegenrr.moviehubback.service.testfunc.TestService.*(..))")
+    @Around("execution(* com.comradegenrr.moviehubback.service.controlfunc.ControlService.*(..))")
     public StanderOutput doLogForTest(ProceedingJoinPoint joinPoint) throws Throwable{
         Logger logger = LoggerFactory.getLogger(LogAop.class);
         String methodName = joinPoint.getSignature().getName();
