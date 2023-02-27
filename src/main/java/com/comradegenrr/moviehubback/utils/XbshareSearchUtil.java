@@ -6,6 +6,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -25,6 +26,7 @@ import javax.script.ScriptException;
 
 //这个分析方法只适用于https://www.xbshare.cc网站
 @Component(value="XbshareSearchUtil")
+@ConditionalOnProperty(prefix = "searchutil",name = "xbshare",havingValue = "true")
 public class XbshareSearchUtil implements SearchUtil{
 
     private String baseUrl = "https://www.xbshare.cc/";

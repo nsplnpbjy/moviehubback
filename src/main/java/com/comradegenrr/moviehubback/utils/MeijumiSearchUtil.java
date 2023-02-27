@@ -13,6 +13,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -20,7 +21,8 @@ import org.springframework.stereotype.Component;
 
 import com.comradegenrr.moviehubback.standerio.MoviePojo;
 
-@Component
+@Component(value = "MeijumiSearchUtil")
+@ConditionalOnProperty(prefix = "searchutil",name = "meijumi",havingValue = "true")
 public class MeijumiSearchUtil implements SearchUtil{
 
     private String baseUrl = "https://www.meijumi.net/";
