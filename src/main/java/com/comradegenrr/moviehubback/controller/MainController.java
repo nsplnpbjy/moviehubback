@@ -1,7 +1,7 @@
 package com.comradegenrr.moviehubback.controller;
 
+import com.comradegenrr.moviehubback.service.controlfunc.ControlService;
 import com.comradegenrr.moviehubback.service.mainfunc.MainService;
-import com.comradegenrr.moviehubback.service.testfunc.TestService;
 import com.comradegenrr.moviehubback.standerio.StanderInput;
 import com.comradegenrr.moviehubback.standerio.StanderOutput;
 
@@ -24,7 +24,7 @@ public class MainController {
     private MainService mainService;
 
     @Resource
-    private TestService testService;
+    private ControlService controlService;
 
     @PostMapping("/s")
     public StanderOutput search(@RequestBody StanderInput standerInput) throws IOException, NoSuchMethodException, ScriptException {
@@ -34,17 +34,17 @@ public class MainController {
 
     @GetMapping("/hotkey/clean")
     public StanderOutput hotKeyClean(){
-        return testService.cleanAllSearchTextCache();
+        return controlService.cleanAllSearchTextCache();
     }
 
     @GetMapping("/movies/clean")
     public StanderOutput movieClean(){
-        return testService.cleanAllMovies();
+        return controlService.cleanAllMovies();
     }
 
     @GetMapping("/movies")
     public StanderOutput findAll(){
-        return testService.getAllMovies();
+        return controlService.getAllMovies();
     }
 
 }
