@@ -25,7 +25,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import com.comradegenrr.moviehubback.standerio.MoviePojo;
 
 @Component(value = "FoxiysSearchUtil")
-@ConditionalOnProperty(prefix = "searchutil",name = "foxiys",havingValue = "true")
+@ConditionalOnProperty(prefix = "searchutil.foxiys",name = "enable",havingValue = "true")
 public class FoxiysSearchUtil implements SearchUtil{
 
     private String baseUrl = "https://www.foxiys.com/";

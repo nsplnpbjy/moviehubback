@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 import com.comradegenrr.moviehubback.standerio.MoviePojo;
 
 @Component(value = "MeijumiSearchUtil")
-@ConditionalOnProperty(prefix = "searchutil",name = "meijumi",havingValue = "true")
+@ConditionalOnProperty(prefix = "searchutil.meijumi",name = "enable",havingValue = "true")
 public class MeijumiSearchUtil implements SearchUtil{
 
     private String baseUrl = "https://www.meijumi.net/";
@@ -83,11 +83,11 @@ public class MeijumiSearchUtil implements SearchUtil{
             return new ArrayList<MoviePojo>();
         }
         String picUrl = img.attr("src");
-        Element mainTitleElement = singleDiv.select("span[class=h2biaoti]").first();
+        Element mainTitleElement = doc.select("h1[class=entry-title]").first();
         if(Objects.isNull(mainTitleElement)){
             return new ArrayList<MoviePojo>();
         }
-        String mainTitle = mainTitleElement.select("strong").text();
+        String mainTitle = mainTitleElement.text();
         Elements ps = singleDiv.select("p");
         if(Objects.isNull(ps)){
             return new ArrayList<MoviePojo>();
