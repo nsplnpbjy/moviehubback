@@ -133,6 +133,9 @@ public class MeijumiSearchUtil implements SearchUtil{
         if(link.contains("www.meijumi.net")){
             return false;
         }
+        if(link.contains("115.com")){
+            return false;
+        }
         if(link.contains("pan.baidu.com")){
             return false;
         }
