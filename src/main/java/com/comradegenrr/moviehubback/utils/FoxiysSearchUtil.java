@@ -1,15 +1,14 @@
 package com.comradegenrr.moviehubback.utils;
 
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Resource;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import org.jsoup.Jsoup;
@@ -33,6 +32,12 @@ public class FoxiysSearchUtil implements SearchUtil{
 
     @Autowired
     MongoTemplate mongoTemplate;
+
+    @Resource(name = "jsEngine")
+    ScriptEngine scriptEngine;
+
+    @Resource(name = "jsInvocable")
+    Invocable invocable;
 
 
     //网页搜索法
@@ -123,9 +128,6 @@ public class FoxiysSearchUtil implements SearchUtil{
     }
 
     private String encryptMetond(String t) throws ScriptException, NoSuchMethodException, FileNotFoundException{
-        ScriptEngine se = new ScriptEngineManager().getEngineByName("javascript");
-        se.eval(new FileReader("base64.js"));
-        Invocable invocable = (Invocable) se;
         String output = "";
         if(t.length()<7){
             t = t + "       ".substring(0, 7 - t.length());

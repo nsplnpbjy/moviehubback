@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Resource;
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -35,6 +36,12 @@ public class XbshareSearchUtil implements SearchUtil{
 
     @Autowired
     MongoTemplate mongoTemplate;
+    
+    @Resource(name = "jsEngine")
+    ScriptEngine scriptEngine;
+
+    @Resource(name = "jsInvocable")
+    Invocable invocable;
 
 
     //仅网页搜索法
@@ -125,9 +132,6 @@ public class XbshareSearchUtil implements SearchUtil{
     }
     
     private String encryptMetond(String t) throws ScriptException, NoSuchMethodException, FileNotFoundException{
-        ScriptEngine se = new ScriptEngineManager().getEngineByName("javascript");
-        se.eval(new FileReader("base64.js"));
-        Invocable invocable = (Invocable) se;
         String output = "";
         if(t.length()<7){
             t = t + "       ".substring(0, 7 - t.length());
