@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.comradegenrr</groupId>
     <artifactId>moviehub</artifactId>
-    <version>4.0.0</version>
+    <version>5.0.0</version>
     <name>movie hub</name>
     <description>movie hub</description>
     <properties>
