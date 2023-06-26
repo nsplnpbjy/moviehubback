@@ -48,6 +48,14 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
         
+        <!-- jjwt：JSON Web令牌工具 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+
         <dependency>
             <!-- jsoup HTML parser library @ https://jsoup.org/ -->
             <groupId>org.jsoup</groupId>
