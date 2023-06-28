@@ -10,7 +10,7 @@
     </parent>
     <groupId>com.comradegenrr</groupId>
     <artifactId>moviehub</artifactId>
-    <version>5.0.0</version>
+    <version>6.0.0</version>
     <name>movie hub</name>
     <description>movie hub</description>
     <properties>
@@ -42,6 +42,19 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+        
+        <!-- jjwt：JSON Web令牌工具 -->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
 
         <dependency>
             <!-- jsoup HTML parser library @ https://jsoup.org/ -->
