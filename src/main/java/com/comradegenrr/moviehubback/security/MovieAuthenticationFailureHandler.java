@@ -24,7 +24,7 @@ public class MovieAuthenticationFailureHandler implements AuthenticationFailureH
     @Override
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
             AuthenticationException exception) throws IOException, ServletException {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setStatus(HttpServletResponse.SC_ACCEPTED);
                 response.setContentType("application/json;charset=utf-8");
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("code", "-2");

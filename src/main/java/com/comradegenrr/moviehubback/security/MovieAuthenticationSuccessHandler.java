@@ -32,7 +32,7 @@ public class MovieAuthenticationSuccessHandler implements AuthenticationSuccessH
             Authentication authentication) throws IOException, ServletException {
                 String username = ((UserDetails)authentication.getPrincipal()).getUsername();
                 String token = jwtUtils.generateToken(username);
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setStatus(HttpServletResponse.SC_ACCEPTED);
                 response.setContentType("application/json;charset=utf-8");
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("code", "0");

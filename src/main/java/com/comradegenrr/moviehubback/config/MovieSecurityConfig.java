@@ -12,6 +12,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.comradegenrr.moviehubback.security.MovieAuthenticationEntryPoint;
 import com.comradegenrr.moviehubback.security.MovieAuthenticationFailureHandler;
@@ -38,7 +41,7 @@ public class MovieSecurityConfig extends WebSecurityConfigurerAdapter{
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.csrf().disable().authorizeRequests().antMatchers("/regist").permitAll().antMatchers("/login/").permitAll()
+        http.cors().and().csrf().disable().authorizeRequests().antMatchers("/regist","/login/").permitAll()
             .anyRequest().authenticated().and().formLogin().loginProcessingUrl("/login")
             .usernameParameter("username").passwordParameter("password")
             .successHandler(movieAuthenticationSuccessHandler).failureHandler(movieAuthenticationFailureHandler)
@@ -49,6 +52,19 @@ public class MovieSecurityConfig extends WebSecurityConfigurerAdapter{
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(movieUserDetailsService).passwordEncoder(new BCryptPasswordEncoder());
+    }
+
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOriginPattern("*");
+        corsConfiguration.addAllowedHeader("*");
+        corsConfiguration.addAllowedMethod("*");
+        corsConfiguration.setAllowCredentials(true);
+        source.registerCorsConfiguration("/**", corsConfiguration);
+        return new CorsFilter(source);
     }
 
     @Bean(name = "passwordEncoder")
